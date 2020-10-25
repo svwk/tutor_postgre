@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block container %}
+    <div class="card my-4 mx-auto">
+        <div class="card-body m-2 m-md-4">
+            <article class="row">
+                <div class="col-5"><img src="/static/images/{{ t.picture }}" class="img-fluid" alt=""></div>
+                <div class="col-7">
+                    <section class="teacher=info">
+                        <h1 class="h2">{{ t.name }}</h1>
+                        <div class="row">
+                            <div class="col-7">
+                                {% for goal in t.goals %}
+                                    <div class="row">
+                                        <span class="badge badge-secondary mx-3 my-1">{{ goal.title }} </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div>
+                                <p>Рейтинг: {{ t.rating }} </p>
+                                <p>Ставка: {{ t.price }} / час</p>
+                            </div>
+                        </div>
+                        <p>{{ t.about }}</p>
+                    </section>
+
+                    <section class="available">
+                        <h4 class="mb-4 mt-5">Записаться на пробный урок</h4>
+                        {% for day in free_days %}
+                            {% for key,values in day.items() %}
+                                <h6 class="mt-4">{{ key }} </h6>
+                                {% if values %}
+                                    {% for r in values %}
+                                        <a href="{{ url_for('render_booking_item', teacher_id=t.id, weekday= r.day_id, time = r.time.value ) }}"
+                                               class="btn btn-outline-success mr-2 my-2">{{ r.time.value }} свободно</a>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>Нет свободных уроков</p>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </section>
+
+                </div>
+            </article>
+        </div>
+    </div>
+{% endblock %}
