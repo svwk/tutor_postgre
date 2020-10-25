@@ -196,20 +196,17 @@ def render_main():
 def render_goals_item(goal):
     # Загрузка данных
     try:
-        teachers = db.session.query(Teacher).all()
         goals = db.session.query(Goal).all()
+        goal_obj = db.session.query(Goal).filter(Goal.id == goal).first()
+        if goal_obj is None:
+            return render_template('error.html', text="К сожалению, вы ввели неверную цель"), 404
+    
     except OperationalError:
         return render_template('bd_empty.html')
     except ProgrammingError:
         return render_template('bd_empty.html')
     
-    # Проверки входных данных
-    goal_obj = next((g for g in goals if g.id == goal), None)
-    if goal_obj is None:
-        return render_template('error.html', text="К сожалению, вы ввели неверную цель"), 404
-    
-    teachers = [t for t in teachers if goal_obj in t.goals]
-    return render_template('goal.html', goals=goals, teachers=teachers, goal=goal_obj)
+    return render_template('goal.html', goals=goals, teachers=goal_obj.teachers, goal=goal_obj)
 
 
 @app.route('/profiles/<int:teacher_id>/')
