@@ -18,9 +18,11 @@ app = Flask(__name__)
 csrf = CSRFProtect(app)
 SECRET_KEY = secrets.token_urlsafe()
 app.config['SECRET_KEY'] = SECRET_KEY
+config = {}
 
 
 def load_db():
+    global config, db, migrate, app
     try:
         with open('config.json', 'r') as f:
             config = (json.load(f))
@@ -66,7 +68,7 @@ goals_teachers = db.Table('goals_teachers',
 
 class Goal(db.Model):
     __tablename__ = 'goals'
-    id = db.Column(db.String(10), primary_key=True)
+    id = db.Column(db.String(20), primary_key=True)
     title = db.Column(db.String(30), nullable=False)
     sign = db.Column(db.String(1), default="")
     
@@ -128,8 +130,11 @@ def reload_db():
 
 @app.route('/createdb/')
 def create_db():
+    # Пересоздание БД
     db.drop_all()
     db.create_all()
+    
+    # Загрузка данных
     import data
     day_values = []
     for num, val in enumerate(data.weekdays, 1):
@@ -192,6 +197,23 @@ def render_main():
     return render_template('index.html', goals=goals, teachers=teachers)
 
 
+@app.route('/all/<int:page>/')
+def all_teachers(page):
+    # Загрузка данных
+    try:
+        teachers = db.session.query(Teacher).order_by(Teacher.name).paginate(page, config.get("posts_per_page", 6),
+                                                                             False)
+        goals = db.session.query(Goal).all()
+    except OperationalError:
+        # Ошибка, которую выдает локальный сервер, когда не может найти бд
+        return render_template('bd_empty.html')
+    except ProgrammingError:
+        # Ошибка, которую выдает Heroku, когда не может найти бд
+        return render_template('bd_empty.html')
+    
+    return render_template('all_teachers.html', goals=goals, teachers=teachers)
+
+
 @app.route('/goals/<goal>/')
 def render_goals_item(goal):
     # Загрузка данных
@@ -238,22 +260,11 @@ def render_profiles_item(teacher_id):
 @app.route('/request/', methods=['GET', 'POST'])
 def render_request():
     form = forms.RequestForm()
-    return render_template('request.html', form=form)
-
-
-@app.route('/request_done/', methods=['POST'])
-def render_request_done():
     # Если данные не были отправлены
-    if request.method != "POST":
-        # Если пользователь попал на эту страницу не из формы ввода, выдаем 404 ошибку
-        return render_template('error.html', text="К сожалению, данной страницы не существует"), 404
-    
-    # Если данные были отправлены
-    form = forms.RequestForm()
-    if not form.validate_on_submit():
-        # отправляем форму назад
+    if request.method != "POST" or not form.validate_on_submit():
         return render_template('request.html', form=form)
     
+    # Если данные были отправлены
     # получаем данные
     client_name = form.clientName.data
     client_phone = form.clientPhone.data

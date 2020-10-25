@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block container %}
+    <section>
+        <h1 class="h1 text-center mx-auto mt-4 py-5"><strong>Найдите идеального <br>репетитора английского, <br>занимайтесь
+            онлайн</strong></h1>
+        {% include 'goal_menu.html' %}
+        <h2 class="h5 text-center mb-5">Наши преподаватели</h2>
+        <div class="row">
+            <div class="col-12 col-lg-10 offset-lg-1 m-auto">
+                {% for t in teachers.items %}
+                    <div class="card mb-4">
+                        {% include 'profile_card.html' %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="text-center mt-5 mb-3">
+            {% if teachers.has_prev %}
+                <a href="{{ url_for('all_teachers', page = teachers.prev_num) }}"><< Назад</a>
+            {% else %}
+                << Назад{% endif %} |
+            {% if teachers.has_next %}
+                <a href="{{ url_for('all_teachers', page = teachers.next_num) }}">Вперед >></a>
+            {% else %}
+               Вперед >>
+            {% endif %}
+        </div>
+        {% include 'want_req.html' %}
+
+    </section>
+{% endblock %}
