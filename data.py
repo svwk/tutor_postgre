@@ -3,10 +3,11 @@ time_values = ("8:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22
 weekdays = (("mon", "Понедельник"), ("tue", "Вторник"), ("wed", "Среда"), ("thu", "Четверг"), ("fri", "Пятница"),
             ("sat", "Суббота"), ("sun", "Воскресенье"))
 
-goals = {"travel": ["Для путешествий", "⛱"], "study": ["Для учебы","🏫"], "work": ["Для работы","🏢"], "relocate": ["Для переезда","🚜"],"coding":["для программирования","₪"]}
+goals = {"travel": ["Для путешествий", "⛱"], "study": ["Для учебы", "🏫"], "work": ["Для работы", "🏢"],
+         "relocate": ["Для переезда", "🚜"], "coding": ["для программирования", "₪"]}
 
 teachers = [
-
+    
     {
         "id": 0,
         "name": "Morris Simmmons",
@@ -16,7 +17,7 @@ teachers = [
         "price": 900,
         "goals": ["travel", "relocate", "study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": True, "12:00": True, "14:00": False, "16:00": False, "18:00": False,
                     "20:00": False, "22:00": False},
             "tue": {"8:00": True, "10:00": True, "12:00": False, "14:00": False, "16:00": False, "18:00": False,
@@ -42,7 +43,7 @@ teachers = [
         "price": 1200,
         "goals": ["relocate", "study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -68,7 +69,7 @@ teachers = [
         "price": 1300,
         "goals": ["work"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": False, "18:00": False,
                     "20:00": False, "22:00": False},
             "tue": {"8:00": True, "10:00": True, "12:00": True, "14:00": True, "16:00": True, "18:00": True,
@@ -94,7 +95,7 @@ teachers = [
         "price": 1300,
         "goals": ["travel", "study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": False, "18:00": False,
                     "20:00": False, "22:00": False},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": False, "18:00": False,
@@ -119,8 +120,8 @@ teachers = [
         "rating": 4.3,
         "price": 900,
         "goals": ["travel"],
-         "free": {
-
+        "free": {
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -146,7 +147,7 @@ teachers = [
         "price": 800,
         "goals": ["travel", "study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -172,7 +173,7 @@ teachers = [
         "price": 1200,
         "goals": ["travel", "relocate", "study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -189,7 +190,7 @@ teachers = [
                     "20:00": False, "22:00": False},
         }
     },
-
+    
     {
         "id": 7,
         "name": "Mr. Mark",
@@ -199,7 +200,7 @@ teachers = [
         "price": 1100,
         "goals": ["study"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -216,7 +217,7 @@ teachers = [
                     "20:00": False, "22:00": False},
         }
     },
-
+    
     {
         "id": 8,
         "name": "Skye L.",
@@ -226,7 +227,7 @@ teachers = [
         "price": 1700,
         "goals": ["relocate", "work", "coding"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -243,7 +244,7 @@ teachers = [
                     "20:00": False, "22:00": False},
         }
     },
-
+    
     {
         "id": 9,
         "name": "Seeta Y.",
@@ -253,7 +254,7 @@ teachers = [
         "price": 1200,
         "goals": ["work", "coding"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -270,7 +271,7 @@ teachers = [
                     "20:00": False, "22:00": False},
         }
     },
-
+    
     {
         "id": 10,
         "name": "Salman S",
@@ -280,7 +281,7 @@ teachers = [
         "price": 1100,
         "goals": ["travel", "study", "work", "coding"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
@@ -297,7 +298,7 @@ teachers = [
                     "20:00": False, "22:00": False},
         }
     },
-
+    
     {
         "id": 11,
         "name": "Andrew G",
@@ -307,7 +308,7 @@ teachers = [
         "price": 900,
         "goals": ["travel", "work", "coding"],
         "free": {
-
+            
             "mon": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,
                     "20:00": True, "22:00": True},
             "tue": {"8:00": False, "10:00": False, "12:00": False, "14:00": False, "16:00": True, "18:00": True,

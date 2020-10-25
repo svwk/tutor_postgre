@@ -4,6 +4,7 @@ from wtforms import validators
 
 TEL_REG = r'^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$'
 
+
 class BookingForm(FlaskForm):
     clientName = wtforms.StringField("Вас зовут", [validators.InputRequired(message="Необходимо ввести имя")])
     clientPhone = wtforms.StringField("Ваш телефон", [validators.InputRequired(message="Необходимо ввести телефон"),

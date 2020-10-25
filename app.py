@@ -3,15 +3,14 @@ import random
 import secrets
 from datetime import datetime
 
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from flask_migrate import Migrate
-from flask import Flask, render_template, request, redirect, url_for
 from flask_wtf.csrf import CSRFProtect
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 import forms
-
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -41,13 +40,6 @@ def load_db():
 load_db()
 
 
-# if config["dbtype"] == "sqlite":
-#     app.config['SQLALCHEMY_DATABASE_URI'] = config.connection_string_SQLite
-# elif config.dbtype == "postgre":
-#     app.config['SQLALCHEMY_DATABASE_URI'] = config.connection_string_Postgre
-
-
-
 class TimeValue(db.Model):
     __tablename__ = 'time_values'
     id = db.Column(db.Integer, primary_key=True)
@@ -60,7 +52,7 @@ class TimeValue(db.Model):
 class DayValue(db.Model):
     __tablename__ = 'day_values'
     id = db.Column(db.String(3), primary_key=True, unique=True, nullable=False, autoincrement=False)
-    name = db.Column(db.String(10), nullable=False)
+    name = db.Column(db.String(20), nullable=False)
     order = db.Column(db.Integer, unique=True, nullable=False)
     
     schedules = db.relationship("Schedule", back_populates='day')
@@ -92,7 +84,6 @@ class Teacher(db.Model):
     
     goals = db.relationship('Goal', secondary=goals_teachers, back_populates='teachers')
     schedules = db.relationship("Schedule", back_populates='teacher')
-    
 
 
 class Schedule(db.Model):
@@ -128,48 +119,50 @@ class Booking(db.Model):
     schedule_id = db.Column(db.Integer, ForeignKey('schedules.id'), nullable=False)
     schedule = db.relationship("Schedule", back_populates='bookings')
 
+
 @app.route('/reloaddb/')
 def reload_db():
     load_db()
     return redirect(url_for('render_main'))
-    
+
+
 @app.route('/createdb/')
 def create_db():
     db.drop_all()
     db.create_all()
     import data
-    day_values=[]
+    day_values = []
     for num, val in enumerate(data.weekdays, 1):
-        day_values.append(DayValue(id=val[0], name=val[1], order=num ))
+        day_values.append(DayValue(id=val[0], name=val[1], order=num))
     
-    time_values=[]
+    time_values = []
     for num, val in enumerate(data.time_values, 1):
         time_values.append(TimeValue(value=val, order=num))
-     
-    goals=[]
+    
+    goals = []
     for key, val in data.goals.items():
         goals.append(Goal(id=key, title=val[0], sign=val[1]))
     
-    teachers=[]
-    schedules=[]
+    teachers = []
+    schedules = []
     
     for t in data.teachers:
-        teacher=Teacher(id=t["id"], name=t["name"], about=t["about"],rating=t["rating"],picture=t["picture"],price=t["price"])
+        teacher = Teacher(id=t["id"], name=t["name"], about=t["about"], rating=t["rating"], picture=t["picture"],
+                          price=t["price"])
         for g in t["goals"]:
-            goal=next((gg for gg in goals if gg.id==g))
+            goal = next((gg for gg in goals if gg.id == g))
             if goal:
-                teacher.goals.append( goal)
+                teacher.goals.append(goal)
         
         teachers.append(teacher)
         
         for day, val in t["free"].items():
             for time, status in val.items():
-                day_obj=next((d for d in day_values if d.id==day))
+                day_obj = next((d for d in day_values if d.id == day))
                 time_obj = next((tt for tt in time_values if tt.value == time))
-                sh=Schedule(value=status, day=day_obj, time= time_obj, teacher=teacher )
+                sh = Schedule(value=status, day=day_obj, time=time_obj, teacher=teacher)
                 schedules.append(sh)
-                
-                
+    
     db.session.add_all(day_values)
     db.session.add_all(time_values)
     db.session.add_all(goals)
@@ -179,7 +172,6 @@ def create_db():
     return redirect(url_for('render_main'))
 
 
-
 @app.route('/')
 def render_main():
     # Загрузка данных
@@ -187,6 +179,10 @@ def render_main():
         teachers = db.session.query(Teacher).all()
         goals = db.session.query(Goal).all()
     except OperationalError:
+        # Ошибка, которую выдает локальный сервер, когда не может найти бд
+        return render_template('bd_empty.html')
+    except ProgrammingError:
+        # Ошибка, которую выдает Heroku, когда не может найти бд
         return render_template('bd_empty.html')
     
     if len(teachers) > 6:
@@ -194,7 +190,6 @@ def render_main():
         teachers = random.sample(teachers, 6)
     
     return render_template('index.html', goals=goals, teachers=teachers)
-
 
 
 @app.route('/goals/<goal>/')
@@ -205,10 +200,12 @@ def render_goals_item(goal):
         goals = db.session.query(Goal).all()
     except OperationalError:
         return render_template('bd_empty.html')
+    except ProgrammingError:
+        return render_template('bd_empty.html')
     
     # Проверки входных данных
-    goal_obj=next((g for g in goals if g.id == goal), None)
-    if goal_obj  is None:
+    goal_obj = next((g for g in goals if g.id == goal), None)
+    if goal_obj is None:
         return render_template('error.html', text="К сожалению, вы ввели неверную цель"), 404
     
     teachers = [t for t in teachers if goal_obj in t.goals]
@@ -221,22 +218,23 @@ def render_profiles_item(teacher_id):
     try:
         teacher = db.session.query(Teacher).get(teacher_id)
         goals = db.session.query(Goal).all()
-        weekdays=db.session.query(DayValue).order_by(DayValue.order).all()
+        weekdays = db.session.query(DayValue).order_by(DayValue.order).all()
     except OperationalError:
         return render_template('bd_empty.html')
-
+    except ProgrammingError:
+        return render_template('bd_empty.html')
     
     if teacher is None:
         return render_template('error.html', text="К сожалению, данного преподавателя в нашей базе данных нет"), 404
     
-    free_days=[]
+    free_days = []
     for day in weekdays:
-        tt=[s for s in teacher.schedules if (s.day_id==day.id and s.value==True)]
+        tt = [s for s in teacher.schedules if (s.day_id == day.id and s.value)]
         if tt:
-            free_days.append({day.name: sorted(tt,key=lambda x: x.time.order)})
+            free_days.append({day.name: sorted(tt, key=lambda x: x.time.order)})
         else:
             free_days.append({day.name: []})
-        
+    
     return render_template('profile.html', t=teacher, goals=goals, free_days=free_days)
 
 
@@ -277,7 +275,7 @@ def render_request_done():
         db.session.commit()
     except OperationalError:
         return render_template('bd_empty.html')
-        
+    
     # переходим на request_done
     return render_template('request_done.html', clientName=client_name, clientPhone=client_phone,
                            clientGoal=goal, clientTime=time)
@@ -287,10 +285,13 @@ def render_request_done():
 def render_booking_item(teacher_id, weekday, time):
     # Проверка состояния бд
     try:
-        goals = db.session.query(Goal).all()
+        time_obj = db.session.query(TimeValue).filter(TimeValue.value == time).first()
+        weekday_obj = db.session.query(DayValue).get(weekday)
+        teacher = db.session.query(Teacher).get(teacher_id)
     except OperationalError:
         return render_template('bd_empty.html')
-    
+    except ProgrammingError:
+        return render_template('bd_empty.html')
     
     form = forms.BookingForm()
     if request.method == "POST":
@@ -300,16 +301,12 @@ def render_booking_item(teacher_id, weekday, time):
         weekday = form.clientWeekday.data
     
     # Проверки входных данных
-    time_obj = db.session.query(TimeValue).filter(TimeValue.value == time).first()
-    
     if time_obj is None:
         return render_template('error.html', text="К сожалению, вы ввели неверное время"), 404
-
-    weekday_obj = db.session.query(DayValue).get(weekday)
+    
     if weekday_obj is None:
         return render_template('error.html', text="К сожалению, вы ввели неверный день недели"), 404
     
-    teacher = db.session.query(Teacher).get(teacher_id)
     if teacher is None:
         return render_template('error.html', text="К сожалению, данного преподавателя в нашей базе данных нет"), 404
         
@@ -319,8 +316,10 @@ def render_booking_item(teacher_id, weekday, time):
             # получаем данные
             client_name = form.clientName.data
             client_phone = form.clientPhone.data
-
-            schedule=db.session.query(Schedule).filter((Schedule.day_id == weekday) & (Schedule.time_id==time_obj.id) & (Schedule.teacher_id==teacher_id)).first()
+            
+            schedule = db.session.query(Schedule).filter(
+                (Schedule.day_id == weekday) & (Schedule.time_id == time_obj.id) & (
+                        Schedule.teacher_id == teacher_id)).first()
             if not schedule.value:
                 return render_template('error.html', text="К сожалению, указанное время занято"), 200
             
