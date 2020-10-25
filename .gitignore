@@ -1,9 +1,5 @@
 /venv/
 /.idea/
-/booking.json
-/data.json
-/request.json
-*.json
 !/temp/
 
 ### Python template
