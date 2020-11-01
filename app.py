@@ -2,6 +2,7 @@ import json
 import random
 import secrets
 from datetime import datetime
+import os
 
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -18,28 +19,21 @@ app = Flask(__name__)
 csrf = CSRFProtect(app)
 SECRET_KEY = secrets.token_urlsafe()
 app.config['SECRET_KEY'] = SECRET_KEY
-config = {}
+ 
 
+def load_config():
+    with open('config.json', 'r') as f:
+        config = json.load(f)
 
-def load_db():
-    global config, db, migrate, app
-    try:
-        with open('config.json', 'r') as f:
-            config = (json.load(f))
-    except FileNotFoundError:
-        config = None
-    
-    if config is None:
-        app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///tutordb.db"
-    else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = config["connection_string"][config["dbtype"]][1]
-    
+    if config["dbtype"] == 2:
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     migrate.init_app(app, db)
+    return config
 
 
-load_db()
+config = load_config()
 
 
 class TimeValue(db.Model):
