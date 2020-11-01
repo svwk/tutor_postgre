@@ -125,8 +125,8 @@ def reload_db():
 @app.route('/createdb/')
 def create_db():
     # Пересоздание БД
-    db.drop_all()
-    db.create_all()
+    migtrate.downgrade()
+    migtrate.upgrade()
     
     # Загрузка данных
     import data
