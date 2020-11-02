@@ -1,19 +1,9 @@
 {
-    "connection_string": [
-        [
-            "SQLite",
-            "sqlite:///tutordb.db"
-        ],
-        [
-            "Postgre",
-            "postgresql+psycopg2://tutor:1@127.0.0.1:5432/tutor"
-        ],
-        [
-          "Postgreheroku",
-          "postgres://bnrqtwyeymoquu:2a74a6734578dc2e5da182e3336a3af9f695ce7adfdff6010acdd9abe88d095c@ec2-54-75-246-118.eu-west-1.compute.amazonaws.com:5432/d5updm8jrplp9e"
-        ]
-    ],
-    "dbtype": 2,
+    "connection_string": {
+        "SQLite": "sqlite:///tutordb.db",
+        "psgr": "postgresql+psycopg2://tutor:1@127.0.0.1:5432/tutor",
+        "psgr": "env:DATABASE_URL"
+    },
+    "dbselected": "SQLite",
     "posts_per_page" : 5
-
 }

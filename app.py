@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import secrets
 from datetime import datetime
@@ -7,39 +8,44 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from flask_migrate import Migrate
+import flask_migrate
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
 import forms
 
-db = SQLAlchemy()
-migrate = Migrate()
 app = Flask(__name__)
 csrf = CSRFProtect(app)
 SECRET_KEY = secrets.token_urlsafe()
 app.config['SECRET_KEY'] = SECRET_KEY
-config = {}
 
 
-def load_db():
-    global config, db, migrate, app
-    try:
-        with open('config.json', 'r') as f:
-            config = (json.load(f))
-    except FileNotFoundError:
-        config = None
-    
-    if config is None:
-        app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///tutordb.db"
-    else:
-        app.config['SQLALCHEMY_DATABASE_URI'] = config["connection_string"][config["dbtype"]][1]
-    
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
-    migrate.init_app(app, db)
 
+def load_config():
+    with open('config.json', 'r') as f:
+        config_data = (json.load(f))
+    if config_data:
+        db_key=config_data.get("dbselected", "")
+        connection_strings=config_data.get("connection_string", "")
+        if db_key and connection_strings and (db_key in connection_strings):
+            db_uri=connection_strings[db_key]
+            if db_uri[0:3]=="env:":
+                config_data["db_uri"]=os.getenv(db_uri[4:])
+            else:
+                config_data["db_uri"] = db_uri
+            
+            config_data.pop("connection_string")
+            return config_data
+            
+    return render_template('error.html', text="Ошибка конфигурации"), 500
 
-load_db()
+config = load_config()
+db = SQLAlchemy()
+migrate = Migrate()
+app.config['SQLALCHEMY_DATABASE_URI'] = config["db_uri"]
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+migrate.init_app(app, db)
 
 
 class TimeValue(db.Model):
@@ -121,18 +127,13 @@ class Booking(db.Model):
     schedule_id = db.Column(db.Integer, ForeignKey('schedules.id'), nullable=False)
     schedule = db.relationship("Schedule", back_populates='bookings')
 
-
+@app.route('/upgradedb/')
+def upgrade_db():
+    flask_migrate.upgrade()
+    return redirect(url_for('render_main'))
+    
 @app.route('/reloaddb/')
 def reload_db():
-    load_db()
-    return redirect(url_for('render_main'))
-
-
-@app.route('/createdb/')
-def create_db():
-    # Пересоздание БД
-    db.drop_all()
-    db.create_all()
     
     # Загрузка данных
     import data
